@@ -143,3 +143,6 @@ playlist_ids.txt
 
 #bash script
 *.bat
+
+#Music folder
+Music
