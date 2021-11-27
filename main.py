@@ -1,5 +1,6 @@
 from googleapiclient.discovery import build
 from pytube import YouTube
+from pytube import exceptions
 import os
 
 
@@ -73,7 +74,11 @@ def downloadMusic(vidIds, playlistName):
         
     for vidId in vidIds:
         if not (vidId == lastId):
-            downloadSong(url+vidId)
+            try:
+                downloadSong(url+vidId)
+            except (exceptions.AgeRestrictedError, exceptions.VideoPrivate, exceptions.VideoRegionBlocked, exceptions.VideoUnavailable):    
+                print("Video unvailable, skipping to next one!")
+                continue
         else:
             break 
     
