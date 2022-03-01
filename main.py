@@ -1,8 +1,9 @@
+from shutil import move
 from googleapiclient.discovery import build
 from pytube import YouTube
 from pytube import exceptions
+import youtube_dl
 import os
-
 
 def playlistRequest(plId):
     
@@ -83,11 +84,21 @@ def downloadMusic(vidIds, playlistName):
             break 
     
 
-def downloadSong(url):
-    downloadURL = YouTube(url)
-    
-    audio = downloadURL.streams.filter(only_audio=True).first()
-    audio.download("../auto_playlist_update/Downloads/")
+def downloadSong(url):   
+    ydl_opts = {
+    'format': 'bestaudio/best',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+    }],
+    'progress_hooks': [my_hook],
+}
+    #downloadURL = YouTube(url)
+    with youtube_dl.YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+    #audio = downloadURL.streams.filter(only_audio=True).first()
+    #audio.download("../auto_playlist_update/Downloads/")
     
     print("Downloaded succesfully ")
      
@@ -137,6 +148,19 @@ def checkDir(playlistName):
     else:
         os.mkdir("..//Music")
         os.mkdir("..//Music//" + playlistName)     
+        
+def my_hook(d):
+    if d['status'] == 'finished':
+        print('Done downloading, now converting...')
+        
+def ytdlCleanUp(playlistName):
+    fileList = os.listdir('./')
+    songList = []
+    for file in fileList: 
+        if os.path.splitext(file)[1] == ".mp3":
+            songList.append(file)
+    for song in songList:
+        os.rename('./' + song, '..//Music//' + playlistName + '//' + song)
 
 
 try:
@@ -162,8 +186,8 @@ try:
             continue
         else:
             downloadMusic(vidIds, playlistName)
-            convertMusic(playlistName)
-            cleanUp()
+            #convertMusic(playlistName)
+            ytdlCleanUp(playlistName)
             updateLastIdFile(playlistName, lastSongId)
             print("Playlist: " + playlistName + " has been updated!")
             
