@@ -160,7 +160,9 @@ def ytdlCleanUp(playlistName):
         if os.path.splitext(file)[1] == ".mp3":
             songList.append(file)
     for song in songList:
-        os.rename('./' + song, '..//Music//' + playlistName + '//' + song)
+        songName = os.path.splitext(song)[0]
+        newSongName = songName[:-12] + '.mp3'
+        os.rename('./' + song, '..//Music//' + playlistName + '//' + newSongName)
 
 
 try:
